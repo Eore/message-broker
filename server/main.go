@@ -48,6 +48,12 @@ func main() {
 				n, err := c.Read(data)
 				if err == io.EOF {
 					fmt.Println("closing", c.RemoteAddr().String())
+					for i, val := range listClient {
+						if val.IP == c.RemoteAddr().String() {
+							fmt.Println("remove", c.RemoteAddr().String())
+							listClient = append(listClient[:i], listClient[i+1:]...)
+						}
+					}
 					c.Close()
 				}
 				var cmd Command
