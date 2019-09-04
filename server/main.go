@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"net"
 )
 
@@ -40,11 +41,15 @@ func main() {
 	for {
 		c, _ := l.Accept()
 		fmt.Println(c.RemoteAddr().String())
-		defer c.Close()
+		// defer c.Close()
 		go func(c net.Conn) {
 			for {
 				data := make([]byte, (1024 * 10))
-				n, _ := c.Read(data)
+				n, err := c.Read(data)
+				if err == io.EOF {
+					fmt.Println("closing", c.RemoteAddr().String())
+					c.Close()
+				}
 				var cmd Command
 				if err := json.Unmarshal(data[0:n], &cmd); err != nil {
 					Respond(c, Response{
