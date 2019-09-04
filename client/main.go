@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net"
+	"time"
 )
 
 type Command struct {
@@ -19,6 +20,13 @@ func main() {
 		Parameter: "bot",
 	})
 	c.Write(b)
+	time.Sleep(time.Second)
+	bS, _ := json.Marshal(Command{
+		Action:    "send",
+		To:        "miaw",
+		Parameter: "ini pesan",
+	})
+	c.Write(bS)
 	// go func() {
 	for {
 		data := make([]byte, 1024*10)

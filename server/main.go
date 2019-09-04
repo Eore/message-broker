@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net"
 )
 
@@ -40,17 +41,18 @@ func main() {
 	l, _ := net.Listen("tcp4", ":9191")
 	for {
 		c, _ := l.Accept()
-		fmt.Println(c.RemoteAddr().String())
+		rmtAddr := c.RemoteAddr().String()
+		fmt.Println(rmtAddr)
 		// defer c.Close()
 		go func(c net.Conn) {
 			for {
 				data := make([]byte, (1024 * 10))
 				n, err := c.Read(data)
 				if err == io.EOF {
-					fmt.Println("closing", c.RemoteAddr().String())
+					fmt.Println("closing", rmtAddr)
 					for i, val := range listClient {
-						if val.IP == c.RemoteAddr().String() {
-							fmt.Println("remove", c.RemoteAddr().String())
+						if val.IP == rmtAddr {
+							fmt.Println("remove", rmtAddr)
 							listClient = append(listClient[:i], listClient[i+1:]...)
 						}
 					}
@@ -65,10 +67,10 @@ func main() {
 				} else {
 					switch cmd.Action {
 					case "join":
-						fmt.Println("join")
+						log.Println(rmtAddr, "join as", cmd.Parameter)
 						listClient = append(listClient, Client{
 							UID:  fmt.Sprint(cmd.Parameter),
-							IP:   c.RemoteAddr().String(),
+							IP:   rmtAddr,
 							conn: &c,
 						})
 						Respond(c, Response{
@@ -76,6 +78,7 @@ func main() {
 							Data: cmd,
 						})
 					case "list":
+						log.Println(rmtAddr, "calling list")
 						Respond(c, Response{
 							Code: CodeNoError,
 							Data: listClient,
@@ -83,6 +86,7 @@ func main() {
 					case "send":
 						for _, val := range listClient {
 							if val.UID == cmd.To {
+								log.Println(rmtAddr, "sending to", val.IP, val.UID)
 								Respond(*val.conn, Response{
 									Code: CodeNoError,
 									Data: cmd.Parameter,
