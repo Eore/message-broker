@@ -6,94 +6,78 @@ import (
 	"io"
 	"log"
 	"net"
+
+	"github.com/eore/net-tcp/server/module"
 )
 
 //error code number
 const (
 	CodeNoError = iota
 	CodeInvalidFormat
+	CodeClientExist
 )
 
-type Command struct {
-	Action    string      `json:"action"`
-	To        string      `json:"to,omitempty"`
-	Parameter interface{} `json:"parameter"`
-}
-
-type Response struct {
-	Code uint        `json:"code"`
-	Data interface{} `json:"data"`
-}
-
-type Client struct {
-	UID  string `json:"uid"`
-	IP   string `json:"ip"`
-	conn *net.Conn
-}
-
-func Respond(conn net.Conn, res Response) {
+func Respond(conn net.Conn, res module.Response) {
 	b, _ := json.Marshal(res)
 	conn.Write(append(b, '\n'))
 }
 
 func main() {
-	listClient := []Client{}
+	var listClient module.ListClient
 	l, _ := net.Listen("tcp4", ":9191")
 	for {
 		c, _ := l.Accept()
 		rmtAddr := c.RemoteAddr().String()
-		fmt.Println(rmtAddr)
-		// defer c.Close()
+		log.Printf(">> %s connected", rmtAddr)
 		go func(c net.Conn) {
+			var user string
 			for {
 				data := make([]byte, (1024 * 10))
 				n, err := c.Read(data)
 				if err == io.EOF {
-					fmt.Println("closing", rmtAddr)
-					for i, val := range listClient {
-						if val.IP == rmtAddr {
-							fmt.Println("remove", rmtAddr)
-							listClient = append(listClient[:i], listClient[i+1:]...)
-						}
-					}
+					log.Printf(">> %s closing connection", rmtAddr)
+					log.Printf(">> remove %s from list", rmtAddr)
+					listClient.HapusClient(rmtAddr)
 					c.Close()
 				}
-				var cmd Command
+				var cmd module.Command
 				if err := json.Unmarshal(data[0:n], &cmd); err != nil {
-					Respond(c, Response{
+					Respond(c, module.Response{
 						Code: CodeInvalidFormat,
+						From: "server",
 						Data: "format data salah",
 					})
 				} else {
 					switch cmd.Action {
 					case "join":
-						log.Println(rmtAddr, "join as", cmd.Parameter)
-						listClient = append(listClient, Client{
+						log.Printf(">> %s join as %s", rmtAddr, cmd.Parameter)
+						user = fmt.Sprint(cmd.Parameter)
+						if err := listClient.TambahClient(module.Client{
 							UID:  fmt.Sprint(cmd.Parameter),
 							IP:   rmtAddr,
-							conn: &c,
-						})
-						Respond(c, Response{
-							Code: CodeNoError,
-							Data: cmd,
-						})
+							Conn: &c,
+						}); err != nil {
+							Respond(c, module.Response{
+								Code: CodeClientExist,
+								From: "server",
+								Data: err.Error(),
+							})
+						} else {
+							Respond(c, module.Response{
+								Code: CodeNoError,
+								From: "server",
+								Data: fmt.Sprintf("joined as %s", cmd.Parameter),
+							})
+						}
 					case "list":
-						log.Println(rmtAddr, "calling list")
-						Respond(c, Response{
+						log.Printf(">> %s calling list", rmtAddr)
+						Respond(c, module.Response{
 							Code: CodeNoError,
+							From: "server",
 							Data: listClient,
 						})
 					case "send":
-						for _, val := range listClient {
-							if val.UID == cmd.To {
-								log.Println(rmtAddr, "sending to", val.IP, val.UID)
-								Respond(*val.conn, Response{
-									Code: CodeNoError,
-									Data: cmd.Parameter,
-								})
-							}
-						}
-
+						listClient.SendData(user, cmd)
 					default:
 						fmt.Println("defa")
 					}
