@@ -2,6 +2,9 @@ package client
 
 import (
 	"encoding/json"
+	"fmt"
+	"io"
+	"log"
 	"net"
 	"strings"
 )
@@ -33,8 +36,10 @@ func (c *connection) SendCommand(command string) {
 }
 
 func (c *connection) SendData(data Data) {
-	b, _ := json.MarshalIndent(data, "", "    ")
-	c.Conn.Write(append(b, '\n'))
+	b, _ := json.Marshal(data)
+	dat := fmt.Sprintf("send %s\n", b)
+	fmt.Println(dat)
+	c.Conn.Write([]byte(dat))
 }
 
 func (c *connection) ListenData(channel chan<- interface{}) {
@@ -42,8 +47,10 @@ func (c *connection) ListenData(channel chan<- interface{}) {
 		for {
 			buffer := make([]byte, 1024*4)
 			n, err := c.Conn.Read(buffer)
-			if err != nil {
+			if err == io.EOF {
+				log.Println("disconnected from server")
 				c.Conn.Close()
+				return
 			}
 			dataStr := strings.TrimSpace(string(buffer[0:n]))
 			channel <- dataStr
