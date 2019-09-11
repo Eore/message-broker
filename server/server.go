@@ -70,7 +70,6 @@ func StartBrokerServer(port string) {
 						d := Data{}
 						json.Unmarshal([]byte(arrStr[1]), &d)
 						d.Error = Error.New(Error{}, ErrorNull)
-						d.Type = "message"
 						d.From = username
 						log.Printf(">> %s sending data to %s", d.From, d.To)
 						listClient.SendData(d)
