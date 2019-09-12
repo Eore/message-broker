@@ -55,7 +55,8 @@ func StartBrokerServer(port string) {
 					conn.Close()
 					return
 				}
-				arrStr := strings.Split(strings.TrimSpace(string(buffer[0:n])), " ")
+				str := strings.TrimSpace(string(buffer[0:n]))
+				arrStr := strings.Split(str, " ")
 				switch arrStr[0] {
 				case "send":
 					if username == "" {
@@ -68,7 +69,8 @@ func StartBrokerServer(port string) {
 						})
 					} else {
 						d := Data{}
-						json.Unmarshal([]byte(arrStr[1]), &d)
+						strSend := strings.Replace(str, "send ", "", 1)
+						json.Unmarshal([]byte(strSend), &d)
 						d.Error = Error.New(Error{}, ErrorNull)
 						d.From = username
 						log.Printf(">> %s sending data to %s", d.From, d.To)
