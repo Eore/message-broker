@@ -14,12 +14,13 @@ type Error struct {
 	Message string `json:"message"`
 }
 type Data struct {
-	ID    string      `json:"id"`
-	Error Error       `json:"error"`
-	Type  string      `json:"type"`
-	From  string      `json:"from"`
-	To    string      `json:"to"`
-	Body  interface{} `json:"body"`
+	ID     string      `json:"id"`
+	Error  Error       `json:"error"`
+	Type   string      `json:"type"`
+	Method string      `json:"method"`
+	From   string      `json:"from"`
+	To     string      `json:"to"`
+	Body   interface{} `json:"body"`
 }
 
 type connection struct {
