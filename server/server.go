@@ -74,7 +74,7 @@ func StartBrokerServer(port string) {
 						json.Unmarshal([]byte(strSend), &d)
 						d.Error = Error.New(Error{}, ErrorNull)
 						d.From = username
-						log.Printf(">> %s sending data (id : %s, type : %s) to %s", d.From, d.ID, d.Type, d.To)
+						log.Printf(">> %s sending data (id : %s, method: %s, type : %s) to %s", d.From, d.ID, d.Method, d.Type, d.To)
 						listClient.SendData(d)
 					}
 
