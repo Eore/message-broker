@@ -47,7 +47,7 @@ func (c *connection) ListenData(channel chan<- interface{}) {
 			buffer := make([]byte, 1024*4)
 			n, err := c.Conn.Read(buffer)
 			if err == io.EOF {
-				log.Println("disconnected from server")
+				log.Fatalln("disconnected from server")
 				c.Conn.Close()
 				return
 			}
