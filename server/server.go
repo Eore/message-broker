@@ -10,12 +10,13 @@ import (
 )
 
 type Data struct {
-	ID    string      `json:"id"`
-	Error Error       `json:"error"`
-	Type  string      `json:"type"`
-	From  string      `json:"from"`
-	To    string      `json:"to"`
-	Body  interface{} `json:"body"`
+	ID     string      `json:"id"`
+	Error  Error       `json:"error"`
+	Type   string      `json:"type"`
+	Method string      `json:"method"`
+	From   string      `json:"from"`
+	To     string      `json:"to"`
+	Body   interface{} `json:"body"`
 }
 
 func errorChecking(err error, fn func()) {
@@ -73,7 +74,7 @@ func StartBrokerServer(port string) {
 						json.Unmarshal([]byte(strSend), &d)
 						d.Error = Error.New(Error{}, ErrorNull)
 						d.From = username
-						log.Printf(">> %s sending data to %s", d.From, d.To)
+						log.Printf(">> %s sending data (id : %s, type : %s) to %s", d.From, d.ID, d.Type, d.To)
 						listClient.SendData(d)
 					}
 
