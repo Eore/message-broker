@@ -28,7 +28,13 @@ type connection struct {
 }
 
 func ClientConnect(host string) connection {
-	conn, _ := net.Dial("tcp4", host)
+	fmt.Printf("connecting to %s\n", host)
+	conn, err := net.Dial("tcp4", host)
+	if err != nil {
+		fmt.Printf("%s cant be reach\n", host)
+		return connection{Conn: nil}
+	}
+	fmt.Printf("connected to %s\n", host)
 	return connection{Conn: conn}
 }
 
@@ -58,33 +64,13 @@ func (c *connection) ListenData(channel chan<- interface{}) {
 	}()
 }
 
-// type Command struct {
-// 	Action    string      `json:"action"`
-// 	To        string      `json:"to,omitempty"`
-// 	Parameter interface{} `json:"parameter"`
-// }
-
-// func main() {
-// 	c, _ := net.Dial("tcp4", "localhost:9191")
-// 	b, _ := json.Marshal(Command{
-// 		Action:    "join",
-// 		Parameter: "bot",
-// 	})
-// 	c.Write(b)
-// 	time.Sleep(time.Second)
-// 	bS, _ := json.Marshal(Command{
-// 		Action:    "send",
-// 		To:        "miaw",
-// 		Parameter: "ini pesan",
-// 	})
-// 	c.Write(bS)
-// 	// go func() {
-// 	for {
-// 		data := make([]byte, 1024*10)
-// 		n, _ := c.Read(data)
-// 		fmt.Println(string(data[0:n]))
-// 	}
-// 	// }()
-// 	// fmt.Println(string(b))
-// 	// fmt.Fprintln(c, string(b))
-// }
+func (c *connection) ListenDataV2() string {
+	buffer := make([]byte, 1024*4)
+	n, err := c.Conn.Read(buffer)
+	if err == io.EOF {
+		log.Fatalln("disconnected from server")
+		c.Conn.Close()
+		return ""
+	}
+	return strings.TrimSpace(string(buffer[0:n]))
+}
