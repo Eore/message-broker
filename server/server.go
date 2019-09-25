@@ -56,7 +56,7 @@ func StartBrokerServer(port string) {
 					conn.Close()
 					return
 				}
-				str := strings.TrimSpace(string(buffer[0:n]))
+				str := string(buffer[0:n])
 				arrStr := strings.Split(str, " ")
 				switch arrStr[0] {
 				case "send":
