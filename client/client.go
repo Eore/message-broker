@@ -44,7 +44,7 @@ func (c *connection) SendCommand(command string) {
 
 func (c *connection) SendData(data Data) {
 	b, _ := json.Marshal(data)
-	dat := fmt.Sprintf("send %s\n", b)
+	dat := fmt.Sprintf("send %s\n\n", b)
 	c.Conn.Write([]byte(dat))
 }
 
