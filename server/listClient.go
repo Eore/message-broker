@@ -1,10 +1,15 @@
 package server
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"net"
 )
+
+func encodeBase64(str string) string {
+	return base64.RawURLEncoding.EncodeToString([]byte(str))
+}
 
 type Client struct {
 	Username string    `json:"username"`
@@ -14,26 +19,17 @@ type Client struct {
 
 type ListClient []Client
 
-func (l *ListClient) SendData(data Data) {
+func (l *ListClient) SendData(data Payload) {
 	for _, client := range *l {
 		if client.Username == data.To {
-			b, _ := json.MarshalIndent(Data{
-				ID: data.ID,
-				Error: Error{
-					Code:    ErrorNull,
-					Message: "",
-				},
-				Type: data.Type,
-				From: data.From,
-				To:   data.To,
-				Body: data.Body,
-			}, "", "    ")
-			(*client.Conn).Write(append(b, '\n'))
+			b, _ := json.Marshal(data)
+			b64 := encodeBase64(string(b))
+			(*client.Conn).Write(append([]byte(b64), '.'))
 		}
 	}
 }
 
-func (l *ListClient) CariClient(username string) Client {
+func (l *ListClient) FindClient(username string) Client {
 	for _, client := range *l {
 		if client.Username == username {
 			return client
@@ -42,7 +38,7 @@ func (l *ListClient) CariClient(username string) Client {
 	return Client{}
 }
 
-func (l *ListClient) TambahClient(c Client) error {
+func (l *ListClient) AddClient(c Client) error {
 	for _, client := range *l {
 		if client.Username == c.Username || client.IP == c.IP {
 			return errors.New("client already exist")
@@ -52,7 +48,7 @@ func (l *ListClient) TambahClient(c Client) error {
 	return nil
 }
 
-func (l *ListClient) HapusClient(ip string) error {
+func (l *ListClient) RemoveClient(ip string) error {
 	for i, client := range *l {
 		if client.IP == ip {
 			*l = append((*l)[:i], (*l)[i+1:]...)
