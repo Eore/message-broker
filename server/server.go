@@ -106,6 +106,16 @@ func StartBrokerService(port uint, key string) {
 						packet.Payload.From = init.Username
 						log.Printf("CLIENT_SEND [%s] >> sending data to: %s, from: %s, data: %s", rmtAddr, packet.Payload.To, packet.Payload.From, packet.Payload.Data)
 						listClient.SendData(packet.Payload)
+					case "list":
+						packet.Payload.To = init.Username
+						ls := []string{}
+						for _, v := range listClient {
+							ls = append(ls, v.Username)
+						}
+						list, _ := json.Marshal(ls)
+						packet.Payload.Data = string(list)
+						log.Printf("CLIENT_SEND [%s] >> sending list to: %s", rmtAddr, init.Username)
+						listClient.SendData(packet.Payload)
 					}
 				}
 			}
