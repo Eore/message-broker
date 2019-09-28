@@ -76,9 +76,9 @@ func ClientConnect(host, username, key string) connection {
 	return connection{username: username, Conn: conn}
 }
 
-func (c *connection) SendData(uid, to, data string) {
+func (c *connection) sendData(action, uid, to, data string) {
 	b, _ := json.Marshal(Packet{
-		Action: "send",
+		Action: action,
 		Payload: Payload{
 			UID:  uid,
 			To:   to,
@@ -87,6 +87,18 @@ func (c *connection) SendData(uid, to, data string) {
 	})
 	str := encodeBase64(string(b))
 	c.Conn.Write([]byte(str + "."))
+}
+
+func (c *connection) ListUser() []string {
+	c.sendData("list", "", "", "")
+	payload := c.ListenData()
+	ls := []string{}
+	json.Unmarshal([]byte(payload[0].Data), &ls)
+	return ls
+}
+
+func (c *connection) SendData(uid, to, data string) {
+	c.sendData("send", uid, to, data)
 }
 
 func (c *connection) ListenData() []Payload {
