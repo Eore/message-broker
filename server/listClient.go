@@ -1,15 +1,10 @@
 package server
 
 import (
-	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"net"
 )
-
-func encodeBase64(str string) string {
-	return base64.RawURLEncoding.EncodeToString([]byte(str))
-}
 
 type Client struct {
 	Username string    `json:"username"`
