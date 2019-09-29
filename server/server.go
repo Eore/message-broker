@@ -1,7 +1,6 @@
 package server
 
 import (
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -25,16 +24,6 @@ type Payload struct {
 	From  string `json:"from"`
 	Error string `json:"error"`
 	Data  string `json:"data"`
-}
-
-func closingConnection(conn net.Conn, rmtAddr string) {
-	log.Printf("CLIENT_DISCONNECT [%s] >> closing connection\n", rmtAddr)
-	conn.Close()
-}
-
-func decodeBase64(str string) string {
-	b, _ := base64.RawURLEncoding.DecodeString(str)
-	return string(b)
 }
 
 func StartBrokerService(port uint, key string) {
