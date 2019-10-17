@@ -107,7 +107,6 @@ func (c *connection) ListenData() []Payload {
 	if err == io.EOF || err != nil {
 		log.Fatalln("disconnected from server")
 		c.Conn.Close()
-		return []Payload{}
 	}
 	b := buffer[0:n]
 	r, _ := regexp.Compile("(?:[A-z0-9-_]+)")

@@ -93,7 +93,7 @@ func StartBrokerService(port uint, key string) {
 					switch packet.Action {
 					case "send":
 						packet.Payload.From = init.Username
-						log.Printf("CLIENT_SEND [%s] >> sending data to: %s, from: %s, data: %s", rmtAddr, packet.Payload.To, packet.Payload.From, packet.Payload.Data)
+						log.Printf("CLIENT_SEND [%s] >> sending data to: %s, from: %s, data: %s", rmtAddr, packet.Payload.To, packet.Payload.From, arrDat[i])
 						listClient.SendData(packet.Payload)
 					case "list":
 						packet.Payload.To = init.Username
